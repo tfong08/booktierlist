@@ -1,0 +1,15 @@
+.book-list-header {
+    padding-left: 20px;
+    text-align:left;
+}
+
+.book-list {
+    list-style-type: decimal;
+    padding-left: 40px;
+    margin: 0;
+    text-align: left;
+}
+
+.book-list li {
+    margin-bottom: 8px;
+}

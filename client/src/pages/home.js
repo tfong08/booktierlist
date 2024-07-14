@@ -1,5 +1,8 @@
 import React, { useEffect , useState} from "react";
+import BookList from '../components/BookList';
 import axios from 'axios';
+axios.defaults.withCredentials = true;
+
 
 const Home = () => {
   const [user, setUser] = useState(null);
@@ -7,11 +10,13 @@ const Home = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get('http://localhost:4000/api/user');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+        const response = await axios.get('/api/user');
+        console.log(response);
+        if (response.status === 200) {
+            setUser(response.data);
+        } else {
+            throw new Error('Network response was not ok');
         }
-        setUser(response.data);
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -28,6 +33,7 @@ const Home = () => {
         <div>
           <p>Name: {user.name}</p>
           <p>Email: {user.email}</p>
+          <BookList bookList={user.bookList} />
         </div>
       ) : (
         <p>Loading user data...</p>

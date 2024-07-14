@@ -12,7 +12,7 @@ const app = express();
 const port = process.env.SERVER;
 
 // Connect to MongoDB
-mongoose.connect(process.env.ATLAS_URI);
+mongoose.connect(process.env.DB_URL);
 
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
@@ -21,10 +21,22 @@ db.once('open', () => {
 });
 
 const Schema = mongoose.Schema;
+
+const bookSchema =  new Schema({
+  title: String,
+  author: String
+  // ISBN: String,
+  // description: String,
+  // rank: Number
+})
+
 const userSchema = new Schema({
   name: String,
   email: String,
-  googleId: String
+  googleId: String,
+  userRefreshToken: String,
+  userAccessToken: String,
+  bookList: [bookSchema]
 })
 const Users = mongoose.model("user", userSchema);
 
@@ -32,11 +44,16 @@ app.use(session({
     secret: '12345', // Change this to a secure random string for production
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      secure: false,
+      httpOnly: true,
+      maxAge: 6000000
+    }
   }));
 
 app.use(cors({
   origin: "http://localhost:3000",
-  methods: "GET,POST,PUT,DELETE",
+  credentials: true
   }));
   
 // Initialize Passport and session
@@ -66,7 +83,9 @@ passport.use(new GoogleStrategy({
     const newUser = {
       googleId: profile.id,
       name: profile.displayName,
-      email: profile.emails[0].value
+      email: profile.emails[0].value,
+      userRefreshToken: refreshToken,
+      userAccessToken: accessToken
     }
     
     try {
@@ -95,18 +114,18 @@ app.get('/logout', (req, res) => {
   });
 });
 
-// // Redirect to Google OAuth login
-// app.get('/login', (req, res) => {
-//   // If there's an existing user session, logout to allow account selection
-//   if (req.isAuthenticated()) {
-//     req.logout(function(err) {
-//       if (err) { return next(err); }
-//       res.redirect('/');
-//     });
-//   }
-//   // Redirect to Google OAuth login
-//   res.redirect('/auth/google');
-// });
+// Redirect to Google OAuth login
+app.get('/login', (req, res) => {
+  // If there's an existing user session, logout to allow account selection
+  if (req.isAuthenticated()) {
+    req.logout(function(err) {
+      if (err) { return next(err); }
+      res.redirect('/');
+    });
+  }
+  // Redirect to Google OAuth login
+  res.redirect('/auth/google');
+});
 
 // Google OAuth callback
 app.get('/auth/google',
@@ -114,7 +133,10 @@ app.get('/auth/google',
 );
 
 app.get('/auth/google/callback',
-  passport.authenticate('google', { successRedirect: '/',failureRedirect: '/login' })
+  passport.authenticate('google', {failureRedirect: '/login' }),
+  (req,res) => {
+    res.redirect('/');
+  }
 );
 
 // Home route - user must be authenticated
@@ -128,15 +150,22 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/user', (req, res) => {
+  req.user.bookList = [{title: 'BookTitle', author: 'Author'}]
   console.log("this is the request in apiuser: ",req.user)
   res.json({
-    name: req.user.displayName,
-    email: req.user.emails[0].value // Assuming first email is primary
+    name: req.user.name,
+    email: req.user.email, 
+    bookList: req.user.bookList
   });
 });
+
+app.get('api/user/booksearch', (req, res) => {
+  
+})
 
 // Start the server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
