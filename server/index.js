@@ -150,7 +150,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/api/user', (req, res) => {
-  req.user.bookList = [{title: 'BookTitle', author: 'Author'}]
+  req.user.bookList = [{title: 'BookTitle', author: 'Author'},{title: 'BookTitle2', author: 'Author2'}];
   console.log("this is the request in apiuser: ",req.user)
   res.json({
     name: req.user.name,

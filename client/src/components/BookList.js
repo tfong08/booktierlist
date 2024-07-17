@@ -6,8 +6,8 @@ const BookList = ({ bookList }) => {
         <div>
             <p className = 'book-list-header'>Book List:</p>
             <ol className='book-list'>
-                {bookList.map((book, index) => (
-                    <li key={index}>{book.title}</li>
+                {bookList.map((book) => (
+                    <li>{book.title}</li>
                 ))}
             </ol>
         </div>

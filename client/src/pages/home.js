@@ -1,7 +1,8 @@
 import React, { useEffect , useState} from "react";
 import BookList from '../components/BookList';
 import axios from 'axios';
-axios.defaults.withCredentials = true;
+import BookSearch from "../components/BookSearch";
+axios.defaults.withCredentials = false;
 
 
 const Home = () => {
@@ -34,6 +35,7 @@ const Home = () => {
           <p>Name: {user.name}</p>
           <p>Email: {user.email}</p>
           <BookList bookList={user.bookList} />
+          <BookSearch />
         </div>
       ) : (
         <p>Loading user data...</p>
